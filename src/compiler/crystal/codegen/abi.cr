@@ -24,6 +24,8 @@ abstract class Crystal::ABI
       AArch64.new(target_machine)
     when /arm/
       ARM.new(target_machine)
+    when /loongarch64/
+      LoongArch64.new(target_machine)
     when /avr/
       AVR.new(target_machine, target_machine.cpu)
     when /wasm32/
@@ -34,6 +36,14 @@ abstract class Crystal::ABI
   end
 
   abstract def abi_info(atys : Array(LLVM::Type), rty : LLVM::Type, ret_def : Bool, context : Context)
+
+  # Same as above, with the signedness of each integer argument (`nil` for
+  # anything else). Only targets whose C ABI extends narrow integers
+  # according to their signedness need to override this.
+  def abi_info(atys : Array(LLVM::Type), rty : LLVM::Type, ret_def : Bool, context : LLVM::Context, signedness : Array(Bool?))
+    abi_info(atys, rty, ret_def, context)
+  end
+
   abstract def size(type : LLVM::Type)
   abstract def align(type : LLVM::Type)
 

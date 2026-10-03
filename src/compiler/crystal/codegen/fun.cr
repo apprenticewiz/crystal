@@ -434,15 +434,24 @@ class Crystal::CodeGenVisitor
 
     llvm_args_types = external.args.map { |arg| llvm_c_type(arg.type) }
     llvm_return_type = llvm_c_return_type(external.type)
-    @abi.abi_info(llvm_args_types, llvm_return_type, !llvm_return_type.void?, llvm_context)
+    signedness = external.args.map { |arg| c_integer_signed?(arg.type) }
+    @abi.abi_info(llvm_args_types, llvm_return_type, !llvm_return_type.void?, llvm_context, signedness)
   end
 
   def abi_info(external : Def, node : Call)
-    llvm_args_types = node.args.map_with_index do |arg, i|
-      llvm_c_type((external.args[i]? || arg).type)
+    arg_types = node.args.map_with_index do |arg, i|
+      (external.args[i]? || arg).type
     end
+    llvm_args_types = arg_types.map { |arg_type| llvm_c_type(arg_type) }
     llvm_return_type = llvm_c_return_type(external.type)
-    @abi.abi_info(llvm_args_types, llvm_return_type, !llvm_return_type.void?, llvm_context)
+    signedness = arg_types.map { |arg_type| c_integer_signed?(arg_type) }
+    @abi.abi_info(llvm_args_types, llvm_return_type, !llvm_return_type.void?, llvm_context, signedness)
+  end
+
+  private def c_integer_signed?(type : Type) : Bool?
+    type = type.remove_typedef
+    type = type.base_type if type.is_a?(EnumType)
+    type.signed? if type.is_a?(IntegerType)
   end
 
   def setup_context_fun(mangled_name, target_def, llvm_args_types, llvm_return_type) : Nil

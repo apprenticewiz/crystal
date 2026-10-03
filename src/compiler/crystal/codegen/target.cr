@@ -51,7 +51,7 @@ class Crystal::Codegen::Target
 
   def pointer_bit_width
     case @architecture
-    when "aarch64", "x86_64"
+    when "aarch64", "loongarch64", "x86_64"
       64
     when "arm", "i386", "wasm32"
       32
@@ -64,7 +64,7 @@ class Crystal::Codegen::Target
 
   def size_bit_width
     case @architecture
-    when "aarch64", "x86_64"
+    when "aarch64", "loongarch64", "x86_64"
       64
     when "arm", "i386", "wasm32"
       32
@@ -211,6 +211,15 @@ class Crystal::Codegen::Target
       # features contains a floating-point definition.
       if cpu.empty? && !features.includes?("fp") && armhf?
         features += "+vfp2"
+      end
+    when "loongarch64"
+      LLVM.init_loongarch
+
+      # Linux uses the LP64D ABI, but LLVM's default CPU has no FPU and then
+      # silently falls back to the soft-float LP64S ABI. Request the double
+      # precision FPU unless the features already choose one.
+      unless features.split(',').any? { |feature| feature.lchop.in?("d", "f") }
+        features = features.empty? ? "+d" : "#{features},+d"
       end
     when "avr"
       LLVM.init_avr
