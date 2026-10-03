@@ -68,6 +68,16 @@ module Crystal
         {% else %}
           DEFAULT = SYSV
         {% end %}
+      {% elsif flag?(:loongarch64) %}
+        LP64S = 1
+        LP64F
+        LP64D
+        ILP32S
+        ILP32F
+        ILP32D
+        LAST
+
+        DEFAULT = LP64D
       {% else %}
         {% raise "Unsupported target for ABI" %}
       {% end %}
@@ -107,6 +117,11 @@ module Crystal
       rtype : Type*
       bytes : LibC::UInt
       flags : LibC::UInt
+      {% if flag?(:loongarch64) %}
+        # FFI_EXTRA_CIF_FIELDS
+        loongarch_nfixedargs : LibC::UInt
+        loongarch_unused : LibC::UInt
+      {% end %}
     end
 
     struct Type

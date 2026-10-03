@@ -45,6 +45,8 @@ module LLVM
       init_aarch64
     {% elsif flag?(:arm) %}
       init_arm
+    {% elsif flag?(:loongarch64) %}
+      init_loongarch
     {% elsif flag?(:wasm32) %}
       init_webassembly
     {% elsif flag?(:avr) %}
