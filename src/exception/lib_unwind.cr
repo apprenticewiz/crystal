@@ -135,6 +135,9 @@ lib LibUnwind
   {% if flag?(:x86_64) || flag?(:arm) || flag?(:aarch64) %}
     EH_REGISTER_0 = 0
     EH_REGISTER_1 = 1
+  {% elsif flag?(:loongarch64) %}
+    EH_REGISTER_0 = 4 # $a0
+    EH_REGISTER_1 = 5 # $a1
   {% else %}
     EH_REGISTER_0 = 0
     EH_REGISTER_1 = 2
